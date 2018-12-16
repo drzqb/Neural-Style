@@ -116,11 +116,11 @@ class ImageStyleTransfer():
         self.loss = self.content_weight * c_loss + self.style_weight * s_loss
         self.train_op = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.loss)
 
-        # if self.graph_write:
-        #     writer = tf.summary.FileWriter('logs', graph=tf.get_default_graph())
-        #     writer.flush()
-        #     writer.close()
-
+        if self.graph_write:
+            writer = tf.summary.FileWriter('logs', graph=tf.get_default_graph())
+            writer.flush()
+            writer.close()
+            
     def content_loss(self, conv):
         c_loss_ = 0.0
         for conv_output in conv:
@@ -142,13 +142,6 @@ class ImageStyleTransfer():
     def stylize(self, epochs, content_wh, magical_image_save_name):
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())
-
-        # variable_names = [v.name for v in tf.trainable_variables()]
-        # values = sess.run(variable_names)
-        # for k, v in zip(variable_names, values):
-        #     print("Variable: ", k)
-        #     print("Shape: ", v.shape)
-        #     print('Value: ', v)
 
         for epoch in range(1, epochs + 1):
             loss_, _, magical_img_ = sess.run([self.loss, self.train_op, self.magical_img])
