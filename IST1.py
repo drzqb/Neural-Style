@@ -4,8 +4,7 @@
 
 import tensorflow as tf
 from tensorflow.nn import conv2d, bias_add, relu, max_pool, l2_loss
-from scipy.misc import imresize
-import matplotlib.pylab as plt
+from scipy.misc import imread, imresize, imsave
 import numpy as np
 import sys
 
@@ -15,8 +14,8 @@ def load_vgg16_weights(vgg16_path):
 
 
 def load_img(content_file, style_file):
-    content_img = plt.imread(content_file)
-    style_img = plt.imread(style_file)
+    content_img = imread(content_file)
+    style_img = imread(style_file)
     content_wh = content_img.shape[:2]
     return content_wh, content_img, style_img
 
@@ -117,10 +116,10 @@ class ImageStyleTransfer():
         self.loss = self.content_weight * c_loss + self.style_weight * s_loss
         self.train_op = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.loss)
 
-        if self.graph_write:
-            writer = tf.summary.FileWriter('logs', graph=tf.get_default_graph())
-            writer.flush()
-            writer.close()
+        # if self.graph_write:
+        #     writer = tf.summary.FileWriter('logs', graph=tf.get_default_graph())
+        #     writer.flush()
+        #     writer.close()
 
     def content_loss(self, conv):
         c_loss_ = 0.0
@@ -144,13 +143,19 @@ class ImageStyleTransfer():
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())
 
+        # variable_names = [v.name for v in tf.trainable_variables()]
+        # values = sess.run(variable_names)
+        # for k, v in zip(variable_names, values):
+        #     print("Variable: ", k)
+        #     print("Shape: ", v.shape)
+        #     print('Value: ', v)
+
         for epoch in range(1, epochs + 1):
             loss_, _, magical_img_ = sess.run([self.loss, self.train_op, self.magical_img])
             print('Epoch {:d}/{:d} Loss:{:f}'.format(epoch, epochs, loss_))
 
             if epoch % 10 == 0:
-                plt.imshow(vgg16_depreprocess(magical_img_, content_wh))
-                plt.savefig(magical_image_save_name)
+                imsave(magical_image_save_name, vgg16_depreprocess(magical_img_, content_wh))
 
 
 if __name__ == '__main__':
